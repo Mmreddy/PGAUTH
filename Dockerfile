@@ -1,52 +1,41 @@
 ############################################################
 # Dockerfile to install JDK & TOMCAT on ORACLE LINUX
-#
-# 0_1           Mahesh             04MAR2015
-# 
-#
+# 0_1           Maheswara Reddy M          04APRIL2015
 ############################################################
 
 FROM oraclelinux
+MAINTAINER Maheswara Reddy<maheswara_mayaluri@infosys.com>
 
-MAINTAINER INFOSYS Mahesh
-
+# INSTALL ORACLELINUX
+RUN yum -y upgrade
 RUN yum install -y wget
-
 RUN yum install -y tar
+
+ENV CATALINA_HOME /applications/tomcat
+ENV PATH $CATALINA_HOME/bin:$PATH
+ENV TOMCAT_MAJOR_VERSION 8
+ENV TOMCAT_VERSION 8.0
+ENV TOMCAT_TGZ_URL http://mirror.apache-kr.org/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz
 
 # INSTALL JAVA BEGIN
 
-RUN wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u31-b13/jdk-8u31-linux-x64.tar.gz" -P /opt/
-
-RUN tar xzf /opt/jdk-8u31-linux-x64.tar.gz -C /opt
-
-RUN echo "export JAVA_HOME=/opt/jdk1.8.0_31" >> /root/.bash_profile
-
-RUN echo "export PATH=$PATH:/opt/jdk1.8.0_31/bin:/opt/jdk1.8.0_31/jre/bin" >> /root/.bash_profile
-
-RUN echo "export JRE_HOME=/opt/jdk1.8.0_31/jre" >> /root/.bash_profile
-
-ENV JAVA_HOME /opt/jdk1.8.0_31
-
-ENV JRE_HOME /opt/jdk1.8.0_31/jre
+RUN wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u31-b13/jdk-8u31-linux-x64.rpm && \
+    echo "c55acf3c04e149c0b91f57758f6b63ce  jdk-8u31-linux-x64.rpm" >> MD5SUM && \
+    md5sum -c MD5SUM && \
+    rpm -Uvh jdk-8u31-linux-x64.rpm && \
+    yum -y remove wget && \
+    rm -f jdk-8u31-linux-x64.rpm MD5SUM
 
 # INSTALL JAVA END
 
-# INSTALL TOMCAT BEGIN
-
-RUN cd /tmp;wget http://apache.bytenet.in/tomcat/tomcat-8/v8.0.20/bin/apache-tomcat-8.0.20.tar.gz
-
-RUN cd /tmp;tar xzf apache-tomcat-8.0.20.tar.gz
-
-RUN cd /tmp;mv apache-tomcat-8.0.20 /opt/tomcat8
-
-RUN chmod -R 755 /opt/tomcat8
+# INSTALL TOMCAT
+RUN wget -q $TOMCAT_TGZ_URL
+RUN tar xvf apache-tomcat-$TOMCAT_VERSION.tar.gz
+RUN mv apache-tomcat-$TOMCAT_VERSION tomcat
+RUN rm -rf apache-tomcat-$TOMCAT_VERSION.tar.gz
+RUN mkdir /applications
+WORKDIR /applications
 
 EXPOSE 8080
 
-# INSTALL TOMCAT END
-
-CMD /opt/tomcat8/bin/startup.sh
-
-#ENTRYPOINT ./root/.bash_profile
-
+CMD /applications/tomcat/bin/startup.sh

@@ -17,17 +17,6 @@ ENV TOMCAT_MAJOR_VERSION 8
 ENV TOMCAT_VERSION 8.0
 ENV TOMCAT_TGZ_URL http://mirror.apache-kr.org/tomcat/tomcat-$TOMCAT_MAJOR_VERSION/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz
 
-# INSTALL JAVA BEGIN
-
-RUN wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u31-b13/jdk-8u31-linux-x64.rpm && \
-    echo "c55acf3c04e149c0b91f57758f6b63ce  jdk-8u31-linux-x64.rpm" >> MD5SUM && \
-    md5sum -c MD5SUM && \
-    rpm -Uvh jdk-8u31-linux-x64.rpm && \
-    yum -y remove wget && \
-    rm -f jdk-8u31-linux-x64.rpm MD5SUM
-
-# INSTALL JAVA END
-
 # INSTALL TOMCAT
 RUN wget -q $TOMCAT_TGZ_URL
 RUN tar xvf apache-tomcat-$TOMCAT_VERSION.tar.gz
